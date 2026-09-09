@@ -67,12 +67,15 @@ export function filterStores(
 
   if (query.trim()) {
     const q = query.toLowerCase();
-    result = result.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.address.toLowerCase().includes(q) ||
-        "grocery".includes(q)
-    );
+    const genericTerms = ["grocery", "store", "stores", "food", "market", "supermarket"];
+    const isGeneric = genericTerms.some((t) => q.includes(t));
+    if (!isGeneric) {
+      result = result.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.address.toLowerCase().includes(q)
+      );
+    }
   }
 
   if (leastBusy) {

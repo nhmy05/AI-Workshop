@@ -14,7 +14,7 @@ type GroceryMapProps = {
 
 const MAP_STYLE =
   process.env.NEXT_PUBLIC_MAP_STYLE_URL ||
-  "https://demotiles.maplibre.org/style.json";
+  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
 export default function GroceryMap({
   stores,
@@ -24,6 +24,8 @@ export default function GroceryMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const selectRef = useRef(onSelectStore);
+  selectRef.current = onSelectStore;
 
   const createMarkerElement = useCallback(
     (store: Store, isSelected: boolean) => {
@@ -102,26 +104,6 @@ export default function GroceryMap({
 
     map.addControl(new NavigationControl(), "bottom-right");
 
-    map.on("load", () => {
-      stores.forEach((store) => {
-        const el = createMarkerElement(store, false);
-        const marker = new Marker({ element: el })
-          .setLngLat([store.longitude, store.latitude])
-          .addTo(map);
-
-        el.addEventListener("click", () => {
-          onSelectStore(store);
-          map.flyTo({
-            center: [store.longitude, store.latitude],
-            zoom: 16,
-            essential: true,
-          });
-        });
-
-        markersRef.current.push(marker);
-      });
-    });
-
     mapRef.current = map;
 
     return () => {
@@ -146,7 +128,7 @@ export default function GroceryMap({
         .addTo(map);
 
       el.addEventListener("click", () => {
-        onSelectStore(store);
+        selectRef.current(store);
         map.flyTo({
           center: [store.longitude, store.latitude],
           zoom: 16,
@@ -156,7 +138,7 @@ export default function GroceryMap({
 
       markersRef.current.push(marker);
     });
-  }, [stores, selectedStore, createMarkerElement, onSelectStore]);
+  }, [stores, selectedStore, createMarkerElement]);
 
   return (
     <div className="absolute inset-0" role="application" aria-label="Grocery store map">
